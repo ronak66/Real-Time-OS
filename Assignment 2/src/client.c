@@ -6,7 +6,7 @@
 #include <string.h> 
 #include <signal.h>
 #include <pthread.h>
-#include "../message.h"
+#include "../include/utils.h"
 #define PORT 5000 
 
 
@@ -20,7 +20,7 @@ void *send_message(){
 		char reciever_number[10];
 		int msg_type;
 
-		printf("Enter your message: \n");
+		printf("Enter your message: ");
 		scanf("%[^\n]%*c", msg); 
 		printf("Enter message type 1 or 2 (1: To all, 2: Particular client): ");
 		scanf("%d%*c",&msg_type);
@@ -31,6 +31,7 @@ void *send_message(){
 			// fgets(reciever_number, sizeof(reciever_number), stdin);
 		}
 		strcpy(packet.sender, client_number);
+		strcpy(packet.sender_name, client_name);
 		packet.message_type = msg_type;
 		strcpy(packet.message, msg);
 		strcpy(packet.receiver, reciever_number);
@@ -43,16 +44,18 @@ void *recieve_message(){
 	while(1){
 		struct Message msg;
 		int valread = recv(sock, &msg, sizeof(msg), 0);
-		printf("Recieved Message from %s: %s\n",msg.sender,msg.message); 
+		// printf("Recieved Message from %s: %s\n",msg.sender,msg.message); 
+		fprintf(stdout,"\33[2K\r== %s (Ph. No. %s): %s\nEnter your message: ", msg.sender_name,msg.sender,msg.message);
+        fflush(stdout);
 	}
 }
 
-struct Register get_data(){
+struct Data get_data(){
 	printf("Input Name: ");
 	scanf("%[^\n]%*c", client_name);
 	printf("Input Number: ");
 	scanf("%[^\n]%*c", client_number);
-	struct Register data ;
+	struct Data data ;
 	strcpy(data.name, client_name);
 	strcpy(data.number, client_number);
 	// data.number = number;
@@ -94,7 +97,7 @@ int main(int argc, char const *argv[])
 	}
 
 
-	struct Register data;
+	struct Data data;
 	data = get_data();
 	send(sock, &data, sizeof(data),0);
 

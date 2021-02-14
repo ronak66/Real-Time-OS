@@ -7,10 +7,10 @@
 #include <string.h> 
 #include <signal.h>
 #include <pthread.h>
-#include "../message.h"
+#include "../include/utils.h"
 
 #define PORT 5000 
-#define MAX_CLIENTS 3
+#define MAX_CLIENTS 10
 int sock = 0;
 int number_of_clients = 0;
 pthread_mutex_t memberRegistrationMutex;
@@ -40,7 +40,7 @@ void *recieve_message(){
 
 void *client_handler(void *socket_fd){
 	int client_sock_fd = *(int *)socket_fd;
-	struct Register data;
+	struct Data data;
 	int valread = recv(sock, &data, sizeof(data), 0);
 	printf("Registering: %s and %s\n",data.name,data.number);
 	pthread_mutex_lock(&memberRegistrationMutex);
@@ -53,7 +53,6 @@ void *client_handler(void *socket_fd){
 	printf("Numer of Clients: %d\n",number_of_clients);
 	struct Message msg;
 	while(recv(client_sock_fd, &msg, sizeof(msg), 0)) {
-	// recv(connection_fd, recvBuffer, MAXLENGTH, 0);
 		printf("Recieved Message from %s of type %d: %s\n",msg.sender,msg.message_type,msg.message);
 		if(msg.message_type == 2){
 			for(int j=0;j<number_of_clients;j++){
@@ -120,8 +119,5 @@ int main(int argc, char const *argv[])
 		} 
 		pthread_create(&client_thread[number_of_clients],NULL,client_handler, (void *)&sock);		
 	}
-
-	// pthread_join(thread1, NULL);
-	// pthread_join(thread2, NULL);
 	return 0; 
 } 
