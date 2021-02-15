@@ -45,7 +45,7 @@ void *recieve_message(){
 		struct Message msg;
 		int valread = recv(sock, &msg, sizeof(msg), 0);
 		// printf("Recieved Message from %s: %s\n",msg.sender,msg.message); 
-		fprintf(stdout,"\33[2K\r== %s (Ph. No. %s): %s\nEnter your message: ", msg.sender_name,msg.sender,msg.message);
+		fprintf(stdout,"\33[2K\r== %s (Ph.No. %s): %s\nEnter your message: ", msg.sender_name,msg.sender,msg.message);
         fflush(stdout);
 	}
 }
@@ -82,8 +82,8 @@ int main(int argc, char const *argv[])
 	serv_addr.sin_port = htons(PORT); 
 	
 	// Convert IPv4 and IPv6 addresses from text to binary form 
-	if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0) 	
-	// if(inet_pton(AF_INET, "52.188.118.148", &serv_addr.sin_addr)<=0) 
+	//if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0) 	
+	if(inet_pton(AF_INET, "40.76.57.211", &serv_addr.sin_addr)<=0) 
 	
 	{ 
 		printf("\nInvalid address/ Address not supported \n"); 

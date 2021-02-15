@@ -20,23 +20,6 @@ char client_number[MAX_CLIENTS][10];
 char client_name[MAX_CLIENTS][20];
 pthread_t client_thread[MAX_CLIENTS];
 
-void *send_message(){
-	while(1){
-		char msg[1024];
-		printf("Enter your message: \n");
-		scanf("%[^\n]%*c", msg); 
-		send(sock , msg , strlen(msg) , 0); 
-		printf("-----Message Sent-----\n"); 
-	}
-}
-
-void *recieve_message(){
-	while(1){
-		struct Message msg;
-		int valread = recv(sock, &msg, sizeof(msg), 0);
-		printf("Recieved Message from Client: %s and %d\n",msg.message,msg.message_type); 
-	}
-}
 
 void *client_handler(void *socket_fd){
 	int client_sock_fd = *(int *)socket_fd;
@@ -53,7 +36,7 @@ void *client_handler(void *socket_fd){
 	printf("Numer of Clients: %d\n",number_of_clients);
 	struct Message msg;
 	while(recv(client_sock_fd, &msg, sizeof(msg), 0)) {
-		printf("Recieved Message from %s of type %d: %s\n",msg.sender,msg.message_type,msg.message);
+		printf("Recieved Message from %s (Ph.No. %s) of type %d: %s\n",msg.sender_name,msg.sender,msg.message_type,msg.message);
 		if(msg.message_type == 2){
 			for(int j=0;j<number_of_clients;j++){
 				if(strcmp(client_number[j], msg.receiver) == 0){
