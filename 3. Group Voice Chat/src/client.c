@@ -10,8 +10,9 @@
 #include <pulse/error.h>
 #include <errno.h>
 #include <fcntl.h>
-#include "../include/utils.h"
-#define PORT 5000 
+#include "../include/utils.h"   
+// #define PORT 4141 
+#define PORT 8080
 
 #define BUFSIZE 1024
 
@@ -24,8 +25,8 @@ static const pa_sample_spec ss = {
 
 
 int sock = 0;
-char client_name[20],client_number[10];
-char name[10] = "ronak";
+char user_id[20],group_id[20];
+char name[20];
 
 static ssize_t loop_write(int fd, const void* data, size_t size) {
     ssize_t ret = 0;
@@ -47,9 +48,6 @@ static ssize_t loop_write(int fd, const void* data, size_t size) {
 
 
 void *send_message(){
-	char key;
-	printf("Enter any key to send voice message: ");
-	scanf("%c",&key);
 	pa_simple *s = NULL;
     int ret = 1;
     int error;
@@ -58,21 +56,33 @@ void *send_message(){
         fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(error));
         goto finish;
     }
+    char key;
+    printf("Enter any key to send voice message: ");
+    scanf("%c",&key);
+    int i=0;
     for (;;) {
 		// struct Message message;
+        // if(i==1000){
+        //     printf("Enter any key to send voice message: ");
+        //     scanf("%c",&key);
+        //     i=0;
+        // }
         uint8_t buf[BUFSIZE];
+        struct Message message;
+        strcpy(message.name,"ronak\0");
         /* Record some data ... */
-        if (pa_simple_read(s, buf, sizeof(buf), &error) < 0) {
+        if (pa_simple_read(s, message.msg, sizeof(message.msg), &error) < 0) {
             fprintf(stderr, __FILE__": pa_simple_read() failed: %s\n", pa_strerror(error));
             goto finish;
         }
 		// memcpy(message.msg, buf, sizeof(buf));
 		// strcpy(message.name, name);
         /* And write it to STDOUT */
-        if (loop_write(sock, buf, sizeof(buf)) != sizeof(buf)) {
+        if (loop_write(sock, &message, sizeof(message)) != sizeof(message)) {
             fprintf(stderr, __FILE__": write() failed: %s\n", strerror(errno));
             goto finish;
         }
+        i++;
     }
     ret = 0;
 finish:
@@ -91,10 +101,11 @@ void *recieve_message(){
     }
 	for (;;) {
         uint8_t buf[BUFSIZE];
+        struct Message message;
 		// struct Message message;
         ssize_t r;
         /* Read some data ... */
-        if ((r = read(sock, buf, sizeof(buf))) <= 0) {
+        if ((r = read(sock, &message, sizeof(message))) <= 0) {
             if (r == 0) /* EOF */
                 break;
 
@@ -104,7 +115,7 @@ void *recieve_message(){
 		// memcpy(buf, message.msg, sizeof(buf));
 		// printf("%s says : \n", message.name);
         /* ... and play it */
-        if (pa_simple_write(s, buf, (size_t) r, &error) < 0) {
+        if (pa_simple_write(s, message.msg, sizeof(message.msg), &error) < 0) {
             fprintf(stderr, __FILE__": pa_simple_write() failed: %s\n", pa_strerror(error));
             goto finish;
         }
@@ -121,16 +132,18 @@ finish:
 
 }
 
-struct Data get_data(){
+struct Init get_data(){
 	printf("Input Name: ");
-	scanf("%[^\n]%*c", client_name);
-	printf("Input Number: ");
-	scanf("%[^\n]%*c", client_number);
-	struct Data data ;
-	strcpy(data.name, client_name);
-	strcpy(data.number, client_number);
+	scanf("%[^\n]%*c", name);
+	printf("Input user id: ");
+	scanf("%[^\n]%*c", user_id);
+    printf("Input group id: ");
+	scanf("%[^\n]%*c", group_id);
+	struct Init data ;
+	strcpy(data.group_id, group_id);
+	strcpy(data.user_id, user_id);
 	// data.number = number;
-	printf("%s and %s\n", client_name, client_number);
+	printf("%s and %s and %s\n", name, user_id, group_id);
 	return data;
 }
 
@@ -153,7 +166,9 @@ int main(int argc, char const *argv[])
 	serv_addr.sin_port = htons(PORT); 
 	
 	// Convert IPv4 and IPv6 addresses from text to binary form 
-	if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0) 	
+	// if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0) 	
+    // if(inet_pton(AF_INET, "40.121.60.204", &serv_addr.sin_addr)<=0)  //nithin
+    if(inet_pton(AF_INET, "52.149.151.135", &serv_addr.sin_addr)<=0) 	
 	// if(inet_pton(AF_INET, "13.82.142.97", &serv_addr.sin_addr)<=0) 
 	
 	{ 
@@ -168,7 +183,7 @@ int main(int argc, char const *argv[])
 	}
 
 
-	struct Data data;
+	struct Init data;
 	data = get_data();
 	send(sock, &data, sizeof(data),0);
 
